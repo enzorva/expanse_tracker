@@ -3,7 +3,6 @@ import csv
 import pyfiglet
 import time
 
-
 class Expanse:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -18,7 +17,7 @@ class Expanse:
         elif sys.argv[1] == "list":
             return self.list_expanses()
         elif sys.argv[1] == "summary":
-            pass
+            return self.summary_expanses()
         else:
             print("Invalid action. Please use 'add', 'update', 'delete', 'list', or 'summary'.")
             sys.exit(1)
@@ -30,13 +29,13 @@ class Expanse:
 
         try:
             with open(self.file_path, 'r') as file:
-                id = len(file.readlines())  - 1
+                id = len(file.readlines()) - 1
         except FileNotFoundError:
-            id = 1  
+            id = 1
 
         category = sys.argv[2]
         amount = sys.argv[3]
-        date = time.strftime("%Y-%m-%d")
+        date =  time.strftime("%Y-%m-%d")
 
         with open('expanse.csv', 'a', newline='') as file:
             writer = csv.writer(file)
@@ -103,6 +102,37 @@ class Expanse:
             reader = csv.reader(file)
             for row in reader:
                 print(row)
+
+    def summary_expanses(self):
+        if len(sys.argv) == 2:
+
+            with open(self.file_path, 'r') as file:
+                reader = csv.reader(file)
+                next(reader)
+
+                total = 0
+                for row in reader:
+                    if len(row) >= 4 and row[1].startswith(time.strftime("%Y")):
+                        total += float(row[3])
+                print(f"Total expanse for: {total}")
+
+        elif len(sys.argv) == 3:
+            month = sys.argv[2].zfill(2)
+
+            with open(self.file_path, 'r') as file:
+                reader = csv.reader(file)
+                next(reader)
+
+                total = 0
+                for row in reader:
+                    if len(row) == 4 and row[1].startswith(f"{time.strftime("%Y")}-{month}"):
+                        total += float(row[3])
+        
+                print(f"Total expanse for {time.strftime('%B', time.strptime(month, '%m'))}: {total}")
+
+        else:
+            print("Usage: python expanse_tracker.py summary <month>")
+            sys.exit(1)
 
 def main():
     f = pyfiglet.Figlet(font='small', width=80)
